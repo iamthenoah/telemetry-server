@@ -8,41 +8,6 @@ const output = path.join(process.cwd(), 'database.sqlite')
 const database = new Database(output)
 
 const setupDatabase = () => {
-	// createTable('motion', {
-	// 	sessionUID: 'BIGINT',
-	// 	worldPositionX: 'FLOAT',
-	// 	worldPositionY: 'FLOAT',
-	// 	worldPositionZ: 'FLOAT',
-	// 	worldVelocityX: 'FLOAT',
-	// 	worldVelocityY: 'FLOAT',
-	// 	worldVelocityZ: 'FLOAT',
-	// 	worldForwardDirX: 'SMALLINT',
-	// 	worldForwardDirY: 'SMALLINT',
-	// 	worldForwardDirZ: 'SMALLINT',
-	// 	worldRightDirX: 'SMALLINT',
-	// 	worldRightDirY: 'SMALLINT',
-	// 	worldRightDirZ: 'SMALLINT',
-	// 	gForceLateral: 'FLOAT',
-	// 	gForceLongitudinal: 'FLOAT',
-	// 	gForceVertical: 'FLOAT',
-	// 	yaw: 'FLOAT',
-	// 	pitch: 'FLOAT',
-	// 	roll: 'FLOAT'
-	// })
-
-	// createTable('session', {
-	// 	packetFormat: 'SMALLINT',
-	// 	gameMajorVersion: 'TINYINT',
-	// 	gameMinorVersion: 'TINYINT',
-	// 	packetVersion: 'TINYINT',
-	// 	packetId: 'TINYINT',
-	// 	sessionUID: 'BIGINT',
-	// 	sessionTime: 'FLOAT',
-	// 	frameIdentifier: 'INT',
-	// 	playerCarIndex: 'TINYINT',
-	// 	secondaryPlayerCarIndex: 'TINYINT'
-	// })
-
 	createTable('classification', {
 		sessionUID: 'BIGINT',
 		position: 'TINYINT',
