@@ -1,9 +1,7 @@
-const parser = require('body-parser')
 const express = require('express')
 const { getTables, getAll } = require('./database')
 
 const app = express()
-app.use(parser.json())
 
 const setupServer = () => {
 	app.get('/', (_, res) => {
