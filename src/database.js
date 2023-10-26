@@ -107,7 +107,7 @@ const insertOne = (table, params) => {
 
 		const insert = database.prepare(sql)
 		insert.run(Date.now(), ...values, async error => {
-			error ? reject(error) : resolve(await getOne(params))
+			error ? reject(error) : resolve(await getOne(table, params))
 		})
 		insert.finalize()
 	})

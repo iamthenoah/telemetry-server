@@ -11,10 +11,17 @@ const setupTelemetry = () => {
 }
 
 const handle = (name, property, table) => {
-	f122.on(name, event => {
+	f122.on(name, async event => {
 		const { m_sessionUID } = event.m_header
-		const data = { m_sessionUID, ...event[property] }
-		insertOne(table, sanitize(data))
+		const value = event[property]
+
+		if (Array.isArray(value)) {
+			for (const row of value) {
+				await insertOne(table, sanitize({ m_sessionUID, ...row }))
+			}
+		} else {
+			await insertOne(table, sanitize({ m_sessionUID, ...value }))
+		}
 	})
 }
 
