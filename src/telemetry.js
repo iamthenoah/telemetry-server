@@ -17,10 +17,10 @@ const handle = (name, property, table) => {
 
 		if (Array.isArray(value)) {
 			for (const row of value) {
-				await insertOne(table, sanitize({ m_sessionUID, ...row }))
+				await insertOne(table, flatten(sanitize({ m_sessionUID, ...row })))
 			}
 		} else {
-			await insertOne(table, sanitize({ m_sessionUID, ...value }))
+			await insertOne(table, flatten(sanitize({ m_sessionUID, ...value })))
 		}
 	})
 }
@@ -30,6 +30,23 @@ const sanitize = data => {
 		obj[key.replace('m_', '')] = data[key]
 		return obj
 	}, {})
+}
+
+const flatten = (json, parent) => {
+	let result = {}
+
+	for (const key in json) {
+		const child = parent ? parent + '_' + key : key
+
+		if (json.hasOwnProperty(key) && typeof json[key] === 'object' && !Array.isArray(json[key])) {
+			const nested = flatten(json[key], child)
+
+			result = { ...result, ...nested }
+		} else {
+			result[child] = json[key]
+		}
+	}
+	return result
 }
 
 module.exports = {
