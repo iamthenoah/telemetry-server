@@ -1,0 +1,71 @@
+body {
+    background-color: #f3f3f3;
+}
+
+h1 {
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 48px;
+}
+
+h3 {
+    text-align: center;
+}
+
+h4 {
+ color: #f3f3f3;
+}
+
+.container{
+    text-align: center;
+}
+.box{
+    width: 800px;
+    height: 1300px;
+    color: black;
+    border: 3px solid gray;
+    background-color: darkgrey;
+    text-align: center;
+    margin: auto;
+}
+
+#id{
+    border: solid gray;
+    width: 650px;
+    height: 90px;
+    margin: auto;
+    background-color: aliceblue;
+    border-radius: 20px;
+    box-shadow: 1px 3px #888888;
+}
+
+label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+}
+
+ul{                             /*ul geeft aan dat er zaken worden opgesomt*/
+    list-style-type: none;
+    padding: 30px;
+    margin: 0px;
+    background-color: black;
+    text-align: center;
+    width: 100%;
+}
+
+li{                             /*li geeft aan wat er wordt opgesomt*/
+    display: inline;
+    font-size: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;    
+}
+
+li a{                       /* de li a geeft aan dat de woorden die in de li staan een link bevatten*/
+    text-decoration: none;
+    color: white;
+    padding: 20px 40px;
+}
+
+ul li a:hover{          /* een hover geeft aan dat wanneer je met de muis over een ul li a gaat dat deze van kleur veranderd.*/
+    color: red;}
+

@@ -5,6 +5,8 @@ const { getTables, getAll } = require('./database')
 const app = express()
 
 const setupServer = () => {
+	app.use(express.static('public'))
+
 	app.get('/table', async (_, res) => {
 		try {
 			res.json(await getTables())
