@@ -1,8 +1,12 @@
+const { getTables, getAll } = require('./database')
 const express = require('express')
 const json2csv = require('json2csv')
-const { getTables, getAll } = require('./database')
+const multer = require('multer')
 
 const app = express()
+app.use(multer().array())
+
+let player = null
 
 const setupServer = () => {
 	app.use(express.static('public'))
@@ -35,6 +39,11 @@ const setupServer = () => {
 		} catch (error) {
 			res.status(500).json({ error: error.message })
 		}
+	})
+
+	app.post('/player', (req, res) => {
+		player = Object.fromEntries(Object.entries(req.body))
+		res.sendStatus(201)
 	})
 
 	app.listen(8000)
