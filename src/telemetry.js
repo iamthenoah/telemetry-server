@@ -7,23 +7,34 @@ const f122 = new F122UDP()
 const setupTelemetry = () => {
 	f122.start()
 
-	handle('carTelemetry', 'm_carTelemetryData', 'telemetry')
-	handle('participants', 'm_participants', 'participants')
+	handle('carDamage', 'm_carDamageData')
+	handle('carSetups', 'm_carSetupsData')
+	handle('carStatus', 'm_carStatusData')
+	handle('event', 'm_eventData')
+	handle('finalClassification', 'm_finalClassificationData')
+	handle('lapData', 'm_lapDataData')
+	handle('lobbyInfo', 'm_lobbyInfoData')
+	handle('motion', 'm_motionData')
+	handle('session', 'm_sessionData')
+	handle('carTelemetry', 'm_carTelemetryData')
+	handle('sessionHistory', 'm_sessionHistoryData')
+	handle('participants', 'm_participants')
 }
 
-const handle = (name, property, table) => {
+const handle = (name, property) => {
 	f122.on(name, async event => {
 		const { m_sessionUID } = event.m_header
-		const value = event[property]
+		// const value = event[property]
+		const value = event
 
 		const player = getCurrentPlayer()
 
 		if (Array.isArray(value)) {
 			for (const row of value) {
-				await insertOne(table, flatten({ m_sessionUID, ...row, playerId: player.id }))
+				await insertOne(name, flatten({ m_sessionUID, ...row, playerId: player.id }))
 			}
 		} else {
-			await insertOne(table, flatten({ m_sessionUID, ...value, playerId: player.id }))
+			await insertOne(name, flatten({ m_sessionUID, ...value, playerId: player.id }))
 		}
 	})
 }
