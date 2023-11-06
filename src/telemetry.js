@@ -1,52 +1,59 @@
 const { F122UDP } = require('f1-22-udp')
 const { insertOne } = require('./database')
+const { getCurrentPlayer } = require('./server')
 
 const f122 = new F122UDP()
 
 const setupTelemetry = () => {
 	f122.start()
 
-	handle('carTelemetry', 'm_carTelemetryData', 'telemetry')
-	handle('participants', 'm_participants', 'participants')
+	handle('carDamage', 'm_carDamageData')
+	handle('carSetups', 'm_carSetupsData')
+	handle('carStatus', 'm_carStatusData')
+	handle('event', 'm_eventData')
+	handle('finalClassification', 'm_finalClassificationData')
+	handle('lapData', 'm_lapDataData')
+	handle('lobbyInfo', 'm_lobbyInfoData')
+	handle('motion', 'm_motionData')
+	handle('session', 'm_sessionData')
+	handle('carTelemetry', 'm_carTelemetryData')
+	handle('sessionHistory', 'm_sessionHistoryData')
+	handle('participants', 'm_participants')
 }
 
-const handle = (name, property, table) => {
+const handle = (name, property) => {
 	f122.on(name, async event => {
 		const { m_sessionUID } = event.m_header
-		const value = event[property]
+		// const value = event[property]
+		const value = event
+
+		const player = getCurrentPlayer()
 
 		if (Array.isArray(value)) {
 			for (const row of value) {
-				await insertOne(table, flatten(sanitize({ m_sessionUID, ...row })))
+				await insertOne(name, flatten({ m_sessionUID, ...row, playerId: player.id }))
 			}
 		} else {
-			await insertOne(table, flatten(sanitize({ m_sessionUID, ...value })))
+			await insertOne(name, flatten({ m_sessionUID, ...value, playerId: player.id }))
 		}
 	})
 }
 
-const sanitize = data => {
-	return Object.keys(data).reduce((obj, key) => {
-		obj[key.replace('m_', '')] = data[key]
-		return obj
-	}, {})
-}
+const flatten = data => {
+	var object = {}
 
-const flatten = (json, parent) => {
-	let result = {}
+	for (const key in data) {
+		if (typeof data[key] === 'object' && data[key] !== null) {
+			const flat = flatten(data[key])
 
-	for (const key in json) {
-		const child = parent ? parent + '_' + key : key
-
-		if (json.hasOwnProperty(key) && typeof json[key] === 'object' && !Array.isArray(json[key])) {
-			const nested = flatten(json[key], child)
-
-			result = { ...result, ...nested }
+			for (const x in flat) {
+				object[key + '_' + x] = flat[x]
+			}
 		} else {
-			result[child] = json[key]
+			object[key] = data[key]
 		}
 	}
-	return result
+	return object
 }
 
 module.exports = {
