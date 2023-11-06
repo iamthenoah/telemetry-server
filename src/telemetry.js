@@ -32,21 +32,21 @@ const sanitize = data => {
 	}, {})
 }
 
-const flatten = (json, parent) => {
-	let result = {}
+const flatten = data => {
+	var object = {}
 
-	for (const key in json) {
-		const child = parent ? parent + '_' + key : key
+	for (const key in data) {
+		if (typeof data[key] === 'object' && data[key] !== null) {
+			const flat = flatten(data[key])
 
-		if (json.hasOwnProperty(key) && typeof json[key] === 'object' && !Array.isArray(json[key])) {
-			const nested = flatten(json[key], child)
-
-			result = { ...result, ...nested }
+			for (const x in flat) {
+				object[key + '_' + x] = flat[x]
+			}
 		} else {
-			result[child] = json[key]
+			object[key] = data[key]
 		}
 	}
-	return result
+	return object
 }
 
 module.exports = {
