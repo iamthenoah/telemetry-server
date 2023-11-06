@@ -1,5 +1,6 @@
 const { F122UDP } = require('f1-22-udp')
 const { insertOne } = require('./database')
+const { getCurrentPlayer } = require('./server')
 
 const f122 = new F122UDP()
 
@@ -15,21 +16,16 @@ const handle = (name, property, table) => {
 		const { m_sessionUID } = event.m_header
 		const value = event[property]
 
+		const player = getCurrentPlayer()
+
 		if (Array.isArray(value)) {
 			for (const row of value) {
-				await insertOne(table, flatten(sanitize({ m_sessionUID, ...row })))
+				await insertOne(table, flatten({ m_sessionUID, ...row, playerId: player.id }))
 			}
 		} else {
-			await insertOne(table, flatten(sanitize({ m_sessionUID, ...value })))
+			await insertOne(table, flatten({ m_sessionUID, ...value, playerId: player.id }))
 		}
 	})
-}
-
-const sanitize = data => {
-	return Object.keys(data).reduce((obj, key) => {
-		obj[key.replace('m_', '')] = data[key]
-		return obj
-	}, {})
 }
 
 const flatten = data => {

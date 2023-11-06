@@ -1,12 +1,15 @@
-const { getTables, getAll } = require('./database')
+const { getTables, getAll, insertOne } = require('./database')
 const express = require('express')
 const json2csv = require('json2csv')
 const multer = require('multer')
+const uuid = require('uuid')
 
 const app = express()
 app.use(multer().array())
 
 let player = null
+
+const getCurrentPlayer = () => player
 
 const setupServer = () => {
 	app.use(express.static('public'))
@@ -41,8 +44,9 @@ const setupServer = () => {
 		}
 	})
 
-	app.post('/player', (req, res) => {
-		player = Object.fromEntries(Object.entries(req.body))
+	app.post('/player', async (req, res) => {
+		player = { playerId: uuid.v4(), ...Object.fromEntries(Object.entries(req.body)) }
+		await insertOne('player', player)
 		res.sendStatus(201)
 	})
 
@@ -50,5 +54,6 @@ const setupServer = () => {
 }
 
 module.exports = {
-	setupServer
+	setupServer,
+	getCurrentPlayer
 }
