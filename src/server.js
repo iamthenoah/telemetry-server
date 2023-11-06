@@ -11,9 +11,9 @@ let player = null
 const setupServer = () => {
 	app.use(express.static('public'))
 
-	app.get('/table', async (_, res) => {
+	app.get('/table', (_, res) => {
 		try {
-			res.json(await getTables())
+			res.json(getTables())
 		} catch (error) {
 			res.status(500).json({ error: error.message })
 		}
