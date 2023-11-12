@@ -72,12 +72,10 @@ const setupTelemetry = () => {
 const flattenTyreData = (key, params) => {
 	const data = params[key]
 
-	params[key] = {
-		[key + 'RearLeft']: data[0],
-		[key + 'RearRight']: data[1],
-		[key + 'FrontLeft']: data[2],
-		[key + 'FrontRight']: data[3]
-	}
+	params[key + 'RearLeft'] = data[0]
+	params[key + 'RearRight'] = data[1]
+	params[key + 'FrontLeft'] = data[2]
+	params[key + 'FrontRight'] = data[3]
 }
 
 const handleInsert = async (table, header, params) => {
