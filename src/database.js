@@ -17,36 +17,89 @@ const player = {
 const motion = {
 	sessionUID: 'FLOAT',
 	sessionTime: 'FLOAT',
-	suspensionPositionRL: 'FLOAT',
-	suspensionPositionRR: 'FLOAT',
-	suspensionPositionFL: 'FLOAT',
-	suspensionPositionFR: 'FLOAT',
-	suspensionVelocityRL: 'FLOAT',
-	suspensionVelocityRR: 'FLOAT',
-	suspensionVelocityFL: 'FLOAT',
-	suspensionVelocityFR: 'FLOAT',
-	suspensionAccelerationRL: 'FLOAT',
-	suspensionAccelerationRR: 'FLOAT',
-	suspensionAccelerationFL: 'FLOAT',
-	suspensionAccelerationFR: 'FLOAT',
-	wheelSpeedRL: 'FLOAT',
-	wheelSpeedRR: 'FLOAT',
-	wheelSpeedFL: 'FLOAT',
-	wheelSpeedFR: 'FLOAT',
-	wheelSlipRL: 'FLOAT',
-	wheelSlipRR: 'FLOAT',
-	wheelSlipFL: 'FLOAT',
-	wheelSlipFR: 'FLOAT',
-	localVelocityX: 'FLOAT',
-	localVelocityY: 'FLOAT',
-	localVelocityZ: 'FLOAT',
-	angularVelocityX: 'FLOAT',
-	angularVelocityY: 'FLOAT',
-	angularVelocityZ: 'FLOAT',
-	angularAccelerationX: 'FLOAT',
-	angularAccelerationY: 'FLOAT',
-	angularAccelerationZ: 'FLOAT',
-	frontWheelsAngle: 'FLOAT'
+	worldPositionX: 'FLOAT',
+	worldPositionY: 'FLOAT',
+	worldPositionZ: 'FLOAT',
+	worldVelocityX: 'FLOAT',
+	worldVelocityY: 'FLOAT',
+	worldVelocityZ: 'FLOAT',
+	worldForwardDirX: 'SMALLINT',
+	worldForwardDirY: 'SMALLINT',
+	worldForwardDirZ: 'SMALLINT',
+	worldRightDirX: 'SMALLINT',
+	worldRightDirY: 'SMALLINT',
+	worldRightDirZ: 'SMALLINT',
+	gForceLateral: 'FLOAT',
+	gForceLongitudinal: 'FLOAT',
+	gForceVertical: 'FLOAT',
+	yaw: 'FLOAT',
+	pitch: 'FLOAT',
+	roll: 'FLOAT'
+}
+
+const telemetry = {
+	sessionUID: 'FLOAT',
+	sessionTime: 'FLOAT',
+	speed: 'SMALLINT',
+	throttle: 'FLOAT',
+	steer: 'FLOAT',
+	brake: 'FLOAT',
+	clutch: 'TINYINT',
+	gear: 'TINYINT',
+	engineRPM: 'SMALLINT',
+	drs: 'TINYINT',
+	revLightsPercent: 'TINYINT',
+	revLightsBitValue: 'SMALLINT',
+	brakesTemperatureRearLeft: 'SMALLINT',
+	brakesTemperatureRearRight: 'SMALLINT',
+	brakesTemperatureFrontLeft: 'SMALLINT',
+	brakesTemperatureFrontRight: 'SMALLINT',
+	tyresSurfaceTemperatureRearLeft: 'TINYINT',
+	tyresSurfaceTemperatureRearRight: 'TINYINT',
+	tyresSurfaceTemperatureFrontLeft: 'TINYINT',
+	tyresSurfaceTemperatureFrontRight: 'TINYINT',
+	tyresInnerTemperatureRearLeft: 'TINYINT',
+	tyresInnerTemperatureRearRight: 'TINYINT',
+	tyresInnerTemperatureFrontLeft: 'TINYINT',
+	tyresInnerTemperatureFrontRight: 'TINYINT',
+	engineTemperature: 'SMALLINT',
+	tyresPressureRearLeft: 'FLOAT',
+	tyresPressureRearRight: 'FLOAT',
+	tyresPressureFrontLeft: 'FLOAT',
+	tyresPressureFrontRight: 'FLOAT',
+	surfaceTypeRearLeft: 'TINYINT',
+	surfaceTypeRearRight: 'TINYINT',
+	surfaceTypeFrontLeft: 'TINYINT',
+	surfaceTypeFrontRight: 'TINYINT'
+}
+
+const lap = {
+	sessionUID: 'FLOAT',
+	sessionTime: 'FLOAT',
+	lastLapTimeInMS: 'INT',
+	currentLapTimeInMS: 'INT',
+	sector1TimeInMS: 'SMALLINT',
+	sector2TimeInMS: 'SMALLINT',
+	lapDistance: 'FLOAT',
+	totalDistance: 'FLOAT',
+	safetyCarDelta: 'FLOAT',
+	carPosition: 'TINYINT',
+	currentLapNum: 'TINYINT',
+	pitStatus: 'TINYINT',
+	numPitStops: 'TINYINT',
+	sector: 'TINYINT',
+	currentLapInvalid: 'TINYINT',
+	penalties: 'TINYINT',
+	warnings: 'TINYINT',
+	numUnservedDriveThroughPens: 'TINYINT',
+	numUnservedStopGoPens: 'TINYINT',
+	gridPosition: 'TINYINT',
+	driverStatus: 'TINYINT',
+	resultStatus: 'TINYINT',
+	pitLaneTimerActive: 'TINYINT',
+	pitLaneTimeInLaneInMS: 'SMALLINT',
+	pitStopTimerInMS: 'SMALLINT',
+	pitStopShouldServePen: 'TINYINT'
 }
 
 const session = {
@@ -106,14 +159,17 @@ const classification = {
 	totalRaceTime: 'DOUBLE',
 	penaltiesTime: 'TINYINT UNSIGNED',
 	numPenalties: 'TINYINT UNSIGNED',
-	numTyreStints: 'TINYINT UNSIGNED'
+	numTyreStints: 'TINYINT UNSIGNED',
+	isPlayer: 'TINYINT'
 }
 
 const setupDatabase = async () => {
-	create('player', player)
-	create('motion', motion)
-	create('session', session)
-	create('classification', classification)
+	await create('player', player)
+	await create('motion', motion)
+	await create('telemetry', telemetry)
+	await create('lap', lap)
+	await create('session', session)
+	await create('classification', classification)
 }
 
 const create = async (table, params) => {
@@ -121,15 +177,7 @@ const create = async (table, params) => {
 		.map(([key, type]) => key + ' ' + type)
 		.join(', ')
 	const query = `CREATE TABLE ${table} (${columns});`
-	return await execute(query)
-}
-
-const select = async (table, params) => {
-	const where = Object.entries(params)
-		.map(([key, value]) => `${key} = ${mysql.escape(value)}`)
-		.join(' AND ')
-	const query = `SELECT * FROM ${table} WHERE ${where}`
-	return await execute(query)
+	await execute(query)
 }
 
 const insert = async (table, params) => {
@@ -141,17 +189,16 @@ const insert = async (table, params) => {
 
 const execute = query => {
 	return new Promise((resolve, reject) => {
-		database.connect()
+		database.state === 'connected' && database.connect()
 
 		database.query(query, (error, results) => {
 			error ? reject(error) : resolve(results)
-			database.end()
+			database.state === 'end' && database.end()
 		})
 	})
 }
 
 module.exports = {
 	setupDatabase,
-	select,
 	insert
 }
