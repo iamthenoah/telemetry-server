@@ -1,78 +1,157 @@
-const Nosql = require('nosql')
-const path = require('path')
-const fs = require('fs')
+const mysql = require('mysql')
 
-const databases = {}
+const database = mysql.createConnection({
+	host: 'localhost',
+	user: 'root',
+	password: 'admin',
+	database: 'database'
+})
 
-const setupDatabase = () => {
-	const dir = path.join(process.cwd(), 'databases')
-
-	for (const file of fs.readdirSync(dir)) {
-		if (file.endsWith('.nosql')) {
-			getTable(path.parse(file).name)
-		}
-	}
+const player = {
+	sessionUID: 'FLOAT',
+	firstName: 'TEXT',
+	lastName: 'TEXT',
+	country: 'TEXT'
 }
 
-const getTable = table => {
-	if (databases[table]) {
-		return databases[table]
-	}
-
-	const dir = path.join(process.cwd(), 'databases')
-	!fs.existsSync(dir) && fs.mkdirSync(dir)
-
-	const filename = path.join(dir, `${table}.nosqldb`)
-	const database = Nosql.load(filename)
-	databases[table] = database
-
-	return database
+const motion = {
+	sessionUID: 'FLOAT',
+	sessionTime: 'FLOAT',
+	suspensionPositionRL: 'FLOAT',
+	suspensionPositionRR: 'FLOAT',
+	suspensionPositionFL: 'FLOAT',
+	suspensionPositionFR: 'FLOAT',
+	suspensionVelocityRL: 'FLOAT',
+	suspensionVelocityRR: 'FLOAT',
+	suspensionVelocityFL: 'FLOAT',
+	suspensionVelocityFR: 'FLOAT',
+	suspensionAccelerationRL: 'FLOAT',
+	suspensionAccelerationRR: 'FLOAT',
+	suspensionAccelerationFL: 'FLOAT',
+	suspensionAccelerationFR: 'FLOAT',
+	wheelSpeedRL: 'FLOAT',
+	wheelSpeedRR: 'FLOAT',
+	wheelSpeedFL: 'FLOAT',
+	wheelSpeedFR: 'FLOAT',
+	wheelSlipRL: 'FLOAT',
+	wheelSlipRR: 'FLOAT',
+	wheelSlipFL: 'FLOAT',
+	wheelSlipFR: 'FLOAT',
+	localVelocityX: 'FLOAT',
+	localVelocityY: 'FLOAT',
+	localVelocityZ: 'FLOAT',
+	angularVelocityX: 'FLOAT',
+	angularVelocityY: 'FLOAT',
+	angularVelocityZ: 'FLOAT',
+	angularAccelerationX: 'FLOAT',
+	angularAccelerationY: 'FLOAT',
+	angularAccelerationZ: 'FLOAT',
+	frontWheelsAngle: 'FLOAT'
 }
 
-const getTables = () => {
-	return Object.keys(databases)
+const session = {
+	sessionUID: 'FLOAT',
+	sessionTime: 'FLOAT',
+	weather: 'TINYINT UNSIGNED',
+	trackTemperature: 'TINYINT',
+	airTemperature: 'TINYINT',
+	totalLaps: 'TINYINT UNSIGNED',
+	trackLength: 'SMALLINT',
+	sessionType: 'TINYINT UNSIGNED',
+	trackId: 'TINYINT',
+	formula: 'TINYINT UNSIGNED',
+	sessionTimeLeft: 'SMALLINT UNSIGNED',
+	sessionDuration: 'SMALLINT UNSIGNED',
+	pitSpeedLimit: 'TINYINT UNSIGNED',
+	gamePaused: 'TINYINT UNSIGNED',
+	isSpectating: 'TINYINT UNSIGNED',
+	spectatorCarIndex: 'TINYINT UNSIGNED',
+	sliProNativeSupport: 'TINYINT UNSIGNED',
+	numMarshalZones: 'TINYINT UNSIGNED',
+	safetyCarStatus: 'TINYINT UNSIGNED',
+	networkGame: 'TINYINT UNSIGNED',
+	forecastAccuracy: 'TINYINT UNSIGNED',
+	aiDifficulty: 'TINYINT UNSIGNED',
+	seasonLinkIdentifier: 'INT UNSIGNED',
+	weekendLinkIdentifier: 'INT UNSIGNED',
+	sessionLinkIdentifier: 'INT UNSIGNED',
+	pitStopWindowIdealLap: 'TINYINT UNSIGNED',
+	pitStopWindowLatestLap: 'TINYINT UNSIGNED',
+	pitStopRejoinPosition: 'TINYINT UNSIGNED',
+	steeringAssist: 'TINYINT UNSIGNED',
+	brakingAssist: 'TINYINT UNSIGNED',
+	gearboxAssist: 'TINYINT UNSIGNED',
+	pitAssist: 'TINYINT UNSIGNED',
+	pitReleaseAssist: 'TINYINT UNSIGNED',
+	ERSAssist: 'TINYINT UNSIGNED',
+	DRSAssist: 'TINYINT UNSIGNED',
+	dynamicRacingLine: 'TINYINT UNSIGNED',
+	dynamicRacingLineType: 'TINYINT UNSIGNED',
+	gameMode: 'TINYINT UNSIGNED',
+	ruleSet: 'TINYINT UNSIGNED',
+	timeOfDay: 'INT UNSIGNED',
+	sessionLength: 'TINYINT UNSIGNED'
 }
 
-const getOne = (table, params) => {
-	const database = getTable(table)
+const classification = {
+	sessionUID: 'FLOAT',
+	sessionTime: 'FLOAT',
+	position: 'TINYINT UNSIGNED',
+	numLaps: 'TINYINT UNSIGNED',
+	gridPosition: 'TINYINT UNSIGNED',
+	points: 'TINYINT UNSIGNED',
+	numPitStops: 'TINYINT UNSIGNED',
+	resultStatus: 'TINYINT UNSIGNED',
+	bestLapTimeInMS: 'INT UNSIGNED',
+	totalRaceTime: 'DOUBLE',
+	penaltiesTime: 'TINYINT UNSIGNED',
+	numPenalties: 'TINYINT UNSIGNED',
+	numTyreStints: 'TINYINT UNSIGNED'
+}
 
+const setupDatabase = async () => {
+	create('player', player)
+	create('motion', motion)
+	create('session', session)
+	create('classification', classification)
+}
+
+const create = async (table, params) => {
+	const columns = Object.entries(params)
+		.map(([key, type]) => key + ' ' + type)
+		.join(', ')
+	const query = `CREATE TABLE ${table} (${columns});`
+	return await execute(query)
+}
+
+const select = async (table, params) => {
+	const where = Object.entries(params)
+		.map(([key, value]) => `${key} = ${mysql.escape(value)}`)
+		.join(' AND ')
+	const query = `SELECT * FROM ${table} WHERE ${where}`
+	return await execute(query)
+}
+
+const insert = async (table, params) => {
+	const keys = Object.keys(params).join(', ')
+	const values = Object.values(params).map(mysql.escape).join(', ')
+	const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`
+	return await execute(query)
+}
+
+const execute = query => {
 	return new Promise((resolve, reject) => {
-		database.one().make(builder => {
-			builder.where(params)
-			builder.callback((error, result) => {
-				error ? reject(error) : resolve(result)
-			})
-		})
-	})
-}
+		database.connect()
 
-const getAll = table => {
-	const database = getTable(table)
-
-	return new Promise((resolve, reject) => {
-		database.find().make(builder => {
-			builder.callback((error, result) => {
-				error ? reject(error) : resolve(result)
-			})
-		})
-	})
-}
-
-const insertOne = (table, params) => {
-	const database = getTable(table)
-
-	return new Promise((resolve, reject) => {
-		database.insert(params).callback((error, result) => {
-			error ? reject(error) : resolve(result)
+		database.query(query, (error, results) => {
+			error ? reject(error) : resolve(results)
+			database.end()
 		})
 	})
 }
 
 module.exports = {
 	setupDatabase,
-	getTable,
-	getOne,
-	getAll,
-	insertOne,
-	getTables
+	select,
+	insert
 }
