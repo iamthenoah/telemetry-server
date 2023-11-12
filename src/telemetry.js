@@ -12,8 +12,10 @@ const setupTelemetry = () => {
 			const player = getCurrentPlayer()
 
 			if (player) {
-				console.log('Session started with player!', player)
+				const sessionUID = event.m_header.m_sessionUID
 				await insert('player', { ...player, sessionUID })
+
+				console.log('Session started with player:', player)
 			} else {
 				console.log('Session started without a player.')
 			}
