@@ -1,5 +1,5 @@
 const { F122UDP } = require('f1-22-udp')
-const { insertOne } = require('./database')
+const { select, insert } = require('./database')
 const { getCurrentPlayer } = require('./server')
 
 const f122 = new F122UDP()
@@ -7,53 +7,60 @@ const f122 = new F122UDP()
 const setupTelemetry = () => {
 	f122.start()
 
-	handle('carDamage', 'm_carDamageData')
-	handle('carSetups', 'm_carSetupsData')
-	handle('carStatus', 'm_carStatusData')
-	handle('event', 'm_eventData')
-	handle('finalClassification', 'm_finalClassificationData')
-	handle('lapData', 'm_lapDataData')
-	handle('lobbyInfo', 'm_lobbyInfoData')
-	handle('motion', 'm_motionData')
-	handle('session', 'm_sessionData')
-	handle('carTelemetry', 'm_carTelemetryData')
-	handle('sessionHistory', 'm_sessionHistoryData')
-	handle('participants', 'm_participants')
-}
+	f122.on('motion', async event => {
+		const { m_header, m_carMotionData, ...reset } = event
 
-const handle = (name, property) => {
-	f122.on(name, async event => {
-		const { m_sessionUID } = event.m_header
-		// const value = event[property]
-		const value = event
+		const { m_suspensionPosition, m_suspensionVelocity, m_suspensionAcceleration, ...data } = reset
+		const [suspensionPositionRL, suspensionPositionRR, suspensionPositionFL, suspensionPositionFR] = m_suspensionPosition
+		const [suspensionVelocityRL, suspensionVelocityRR, suspensionVelocityFL, suspensionVelocityFR] = m_suspensionVelocity
+		const [suspensionAccelerationRL, suspensionAccelerationRR, suspensionAccelerationFL, suspensionAccelerationFR] = m_suspensionAcceleration
 
-		const player = getCurrentPlayer()
+		const params = {
+			...data,
+			suspensionPositionRL,
+			suspensionPositionRR,
+			suspensionPositionFL,
+			suspensionPositionFR,
+			suspensionVelocityRL,
+			suspensionVelocityRR,
+			suspensionVelocityFL,
+			suspensionVelocityFR,
+			suspensionAccelerationRL,
+			suspensionAccelerationRR,
+			suspensionAccelerationFL,
+			suspensionAccelerationFR
+		}
 
-		if (Array.isArray(value)) {
-			for (const row of value) {
-				await insertOne(name, flatten({ m_sessionUID, ...row, playerId: player.id }))
-			}
-		} else {
-			await insertOne(name, flatten({ m_sessionUID, ...value, playerId: player.id }))
+		await handleInsert('motion', m_header, params)
+	})
+
+	f122.on('session', async event => {
+		const { m_header, m_marshalZones, m_weatherForecastSamples, m_numWeatherForecastSamples, ...params } = event
+		await handleInsert('session', m_header, params)
+	})
+
+	f122.on('finalClassification', async event => {
+		const { m_header, m_classificationData } = event
+
+		for (const car of m_classificationData) {
+			delete car['m_tyreStintsActual']
+			delete car['m_tyreStintsVisual']
+			delete car['m_tyreStintsEndLaps']
+
+			await handleInsert('classification', m_header, car)
 		}
 	})
 }
 
-const flatten = data => {
-	var object = {}
+const handleInsert = async (table, header, params) => {
+	const { m_sessionUID: sessionUID, m_sessionTime: sessionTime } = header
 
-	for (const key in data) {
-		if (typeof data[key] === 'object' && data[key] !== null) {
-			const flat = flatten(data[key])
-
-			for (const x in flat) {
-				object[key + '_' + x] = flat[x]
-			}
-		} else {
-			object[key] = data[key]
-		}
+	if (await select('player', { sessionUID })) {
+		await insert('player', { ...getCurrentPlayer(), sessionUID })
 	}
-	return object
+
+	const data = Object.entries(params).map(([key, value]) => [key.replace(/^m_/, ''), value])
+	await insert(table, { sessionUID, sessionTime, ...data })
 }
 
 module.exports = {
