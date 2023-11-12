@@ -176,14 +176,24 @@ const create = async (table, params) => {
 	const columns = Object.entries(params)
 		.map(([key, type]) => key + ' ' + type)
 		.join(', ')
-	const query = `CREATE TABLE ${table} (${columns});`
-	await execute(query)
+	try {
+		const query = `CREATE TABLE ${table} (${columns});`
+		await execute(query)
+		console.error('Created "' + table + '" table.')
+	} catch (error) {
+		if (error.code === 'ER_TABLE_EXISTS_ERROR') {
+			console.error('Table "' + table + '" already exists.')
+		} else {
+			console.error(error)
+		}
+	}
 }
 
 const insert = async (table, params) => {
 	const keys = Object.keys(params).join(', ')
 	const values = Object.values(params).map(mysql.escape).join(', ')
 	const query = `INSERT INTO ${table} (${keys}) VALUES (${values})`
+
 	return await execute(query)
 }
 

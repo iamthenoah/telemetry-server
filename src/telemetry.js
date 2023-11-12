@@ -9,7 +9,14 @@ const setupTelemetry = () => {
 
 	f122.on('event', async event => {
 		if (event.m_eventStringCode === 'SSTA') {
-			await insert('player', { ...getCurrentPlayer(), sessionUID })
+			const player = getCurrentPlayer()
+
+			if (player) {
+				console.log('Session started with player!', player)
+				await insert('player', { ...player, sessionUID })
+			} else {
+				console.log('Session started without a player.')
+			}
 		}
 	})
 
@@ -73,8 +80,8 @@ const flattenTyreData = (key, params) => {
 
 const handleInsert = async (table, header, params) => {
 	const { m_sessionUID: sessionUID, m_sessionTime: sessionTime } = header
-
 	const data = Object.entries(params).map(([key, value]) => [key.replace(/^m_/, ''), value])
+
 	await insert(table, { sessionUID, sessionTime, ...data })
 }
 
