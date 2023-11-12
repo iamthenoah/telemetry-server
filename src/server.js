@@ -1,6 +1,5 @@
-const { getTables, getAll, insertOne } = require('./database')
+const { getTables, insertOne } = require('./database')
 const express = require('express')
-const json2csv = require('json2csv')
 const multer = require('multer')
 const uuid = require('uuid')
 
@@ -14,31 +13,9 @@ const getCurrentPlayer = () => player
 const setupServer = () => {
 	app.use(express.static('public'))
 
-	app.get('/table', (_, res) => {
+	app.get('/table', async (_, res) => {
 		try {
-			res.json(getTables())
-		} catch (error) {
-			res.status(500).json({ error: error.message })
-		}
-	})
-
-	app.get('/table/:table', async (req, res) => {
-		try {
-			const file = req.query.file
-			const table = req.params.table
-			const page = req.query.page || 1
-			const count = req.query.count || 10
-
-			const data = await getAll(table, page, count)
-
-			if (file === 'csv') {
-				const csv = json2csv.parse(data)
-				res.header('Content-Type', 'text/csv')
-				res.attachment(`${table}.csv`)
-				res.send(csv)
-			} else {
-				res.json(data)
-			}
+			res.json(await getTables())
 		} catch (error) {
 			res.status(500).json({ error: error.message })
 		}
