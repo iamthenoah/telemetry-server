@@ -2,6 +2,8 @@ const { F122UDP } = require('f1-22-udp')
 const { insert } = require('./database')
 const { getCurrentPlayer } = require('./server')
 
+const sleep = ms => new Promise(resolve => setTimeoute(resolve, ms))
+
 const f122 = new F122UDP({
 	address: process.env.F122_HOST,
 	port: process.env.F122_PORT
@@ -88,9 +90,14 @@ const flattenTyreData = (key, params) => {
 
 const handleInsert = async (table, header, params) => {
 	const { m_sessionUID: sessionUID, m_sessionTime: sessionTime } = header
+
 	const data = {}
-	Object.entries(params).forEach(([key, value]) => (data[key.replace('m_', '')] = value))
+	for (const [key, value] of Object.entries(params)) {
+		data[key.replace('m_', '')] = value
+	}
+
 	await insert(table, { sessionUID, sessionTime, ...data })
+	await sleep(1000)
 }
 
 module.exports = {
