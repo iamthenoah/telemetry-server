@@ -33,11 +33,11 @@ const setupTelemetry = () => {
 		const { m_header, m_carTelemetryData } = event
 		const params = m_carTelemetryData[m_header.m_playerCarIndex]
 
-		flattenTyreData('brakesTemperature', params)
-		flattenTyreData('tyresSurfaceTemperature', params)
-		flattenTyreData('tyresInnerTemperature', params)
-		flattenTyreData('tyresPressure', params)
-		flattenTyreData('surfaceType', params)
+		flattenTyreData('m_brakesTemperature', params)
+		flattenTyreData('m_tyresSurfaceTemperature', params)
+		flattenTyreData('m_tyresInnerTemperature', params)
+		flattenTyreData('m_tyresPressure', params)
+		flattenTyreData('m_surfaceType', params)
 
 		await handleInsert('telemetry', m_header, params)
 	})
@@ -63,6 +63,10 @@ const setupTelemetry = () => {
 
 		for (let i = 0; i < m_classificationData.length; i++) {
 			const car = m_classificationData[i]
+			delete car['m_tyreStintsActual']
+			delete car['m_tyreStintsVisual']
+			delete car['m_tyreStintsEndLaps']
+
 			car['isPlayer'] = i === m_header.m_playerCarIndex
 			await handleInsert('classification', m_header, car)
 		}
@@ -71,6 +75,7 @@ const setupTelemetry = () => {
 
 const flattenTyreData = (key, params) => {
 	const data = params[key]
+	delete params[key]
 
 	params[key + 'RearLeft'] = data[0]
 	params[key + 'RearRight'] = data[1]
@@ -80,8 +85,8 @@ const flattenTyreData = (key, params) => {
 
 const handleInsert = async (table, header, params) => {
 	const { m_sessionUID: sessionUID, m_sessionTime: sessionTime } = header
-	const data = Object.entries(params).map(([key, value]) => [key.replace(/^m_/, ''), value])
-
+	const data = {}
+	Object.entries(params).forEach(([key, value]) => (data[key.replace('m_', '')] = value))
 	await insert(table, { sessionUID, sessionTime, ...data })
 }
 
