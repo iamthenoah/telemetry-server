@@ -1,0 +1,6 @@
+{
+	"sessionUID": "FLOAT",
+	"firstName": "TEXT",
+	"lastName": "TEXT",
+	"country": "TEXT"
+}

@@ -1,0 +1,16 @@
+{
+	"sessionUID": "FLOAT",
+	"sessionTime": "FLOAT",
+	"position": "TINYINT UNSIGNED",
+	"numLaps": "TINYINT UNSIGNED",
+	"gridPosition": "TINYINT UNSIGNED",
+	"points": "TINYINT UNSIGNED",
+	"numPitStops": "TINYINT UNSIGNED",
+	"resultStatus": "TINYINT UNSIGNED",
+	"bestLapTimeInMS": "INT UNSIGNED",
+	"totalRaceTime": "DOUBLE",
+	"penaltiesTime": "TINYINT UNSIGNED",
+	"numPenalties": "TINYINT UNSIGNED",
+	"numTyreStints": "TINYINT UNSIGNED",
+	"isPlayer": "TINYINT"
+}
