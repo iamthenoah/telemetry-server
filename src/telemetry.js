@@ -2,7 +2,10 @@ const { F122UDP } = require('f1-22-udp')
 const { insert } = require('./database')
 const { getCurrentPlayer } = require('./server')
 
-const f122 = new F122UDP()
+const f122 = new F122UDP({
+	address: process.env.F122_HOST,
+	port: process.env.F122_PORT
+})
 
 const setupTelemetry = () => {
 	f122.start()
